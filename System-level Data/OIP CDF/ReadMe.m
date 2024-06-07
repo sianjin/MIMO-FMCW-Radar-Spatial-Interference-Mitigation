@@ -1,4 +1,4 @@
-% This folder contains the file to generate CDF of output interference power (OIP) over multiple Monte-Carlo runs
+% This folder contains the files to generate CDF of output interference power (OIP) over multiple Monte-Carlo runs
 
 % You can use this code to reproduce Fig. 8 in "Spatial-Domain Mutual Interference Mitigation for MIMO-FMCW Automotive Radar"
 
