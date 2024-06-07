@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below."
+authors:
+- family-names: "Jin"
+  given-names: "Sian"
+  orcid: "https://orcid.org/0000-0001-6953-4439"
+title: "Simulation Code: Spatial-Domain Mutual Interference Mitigation for MIMO-FMCW Automotive Radar"
+date-released: 2024-06-07
+url: "https://github.com/sianjin/MIMO-FMCW-Radar-Spatial-Interference-Mitigation"
