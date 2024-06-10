@@ -86,9 +86,13 @@ To get a local copy up and running follow these simple example steps.
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+The "Synthetic Data" folder contains the code to generate synthetic data for receiver operating characteristic (ROC) curve simulation. 
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+The "System-level Data" folder contains the code to generate system-level simulation data for angle/range-angle spectrum visualization and output interference power calculation.
+
+The implementation detail of angle FFT, clairvoyant detector, receiver subspace (RS) detector, linear constraint minimum variance (LCMV) detector, generalized subspace (GS) detector, and adaptive GS (AGS) detector are included in the two folders.
+
+Please refer to the the ReadMe.m file in the "Synthetic Data" folder and "System-level Data" subfolders for more detail of the code information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
