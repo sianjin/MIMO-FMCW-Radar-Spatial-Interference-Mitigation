@@ -50,7 +50,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+![alt text](https://github.com/sianjin/MIMO-FMCW-Radar-Spatial-Interference-Mitigation/blob/master/interferenceScenario.png)
 
 This project contains the simulation code for generating the figures in our project Paper: “Spatial-Domain Mutual Interference Mitigation for MIMO-FMCW Automotive Radar", submitted to IEEE TVT.
 
