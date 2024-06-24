@@ -181,29 +181,21 @@ param = getDetectResult(param);
 %% RA Interference power CDF
 fftIntPowSet = param.fftIntPowSet;
 fastClairvoyantIntPowSet = param.fastClairvoyantIntPowSet;
-fastRsIntPowSet = param.fastRsIntPowSet;
-fastGsIntPowSet = param.fastGsIntPowSet;
 fastLcmvIntPowSet = param.fastLcmvIntPowSet;
 agsIntPowSet = param.agsIntPowSet;
-save cdfv.mat fftIntPowSet fastClairvoyantIntPowSet fastRsIntPowSet fastGsIntPowSet fastLcmvIntPowSet agsIntPowSet
+save cdfv.mat fftIntPowSet fastClairvoyantIntPowSet fastLcmvIntPowSet agsIntPowSet
 figure
 [fftCDFy,fftCDFx] = ecdf(param.fftIntPowSet);
 [clairvoyantCDFy,clairvoyantCDFx] = ecdf(param.fastClairvoyantIntPowSet);
-[rsCDFy,rsCDFx] = ecdf(param.fastRsIntPowSet);
-[gsCDFy,gsCDFx] = ecdf(param.fastGsIntPowSet);
 [lcmvCDFy,lcmvCDFx] = ecdf(param.fastLcmvIntPowSet);
 [agsCDFy,agsCDFx] = ecdf(param.agsIntPowSet);
 plot(fftCDFx,fftCDFy)
 hold on
 plot(clairvoyantCDFx,clairvoyantCDFy)
 hold on
-plot(rsCDFx,rsCDFy)
-hold on
-plot(gsCDFx,gsCDFy)
-hold on
 plot(lcmvCDFx,lcmvCDFy)
 hold on
 plot(agsCDFx,agsCDFy)
 xlabel('Output Interference Power (dB)')
 ylabel('CDF')
-legend('Angle FFT','Clairvoyant','RS','GS','LCMV-SMI','AGS')
+legend('Angle FFT','Clairvoyant','LCMV-SMI','AGS')
