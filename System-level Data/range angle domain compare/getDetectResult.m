@@ -142,8 +142,6 @@ end
 %% Range-angle spectrum for phase coded MIMO radar
 param.Nafft = 2^nextpow2(param.Nr*param.Nt); % length of angle FFT
 fftStats = complex(zeros(param.Nrfft,param.Nafft));
-rsStats = complex(zeros(param.Nrfft,param.Nafft));
-gsStats = complex(zeros(param.Nrfft,param.Nafft));
 clairvoyantStats = complex(zeros(param.Nrfft,param.Nafft));
 lcmvStats = complex(zeros(param.Nrfft,param.Nafft));
 agsStats = complex(zeros(param.Nrfft,param.Nafft));
@@ -157,9 +155,6 @@ rangeTrainCells = 4; % number of training cells on each side of range domain
 velocityTrainCells = 4; % number of training cells on each side of velocity domain
 % Number of range bin on on each side of the target for plot
 for n = 1 : param.Nrfft
-    % Get EINR estimation from nearby range-velocity bins for GS detector
-    % einr_est = getEinrEst(Y_rD_3D,param);
-    fast_einr_est = getEinrEstFast(Y_rD_3D,n,intStatVelocityBin,param,rangeGI,velocityGI,rangeTrainCells,velocityTrainCells);
     % Get interference covariance matrix estimation from nearby range-velocity
     % bins for LCMV detector
     % R_est = getIntCovEst(Y_rD_3D,param);
@@ -187,9 +182,6 @@ for n = 1 : param.Nrfft
         at = exp(1j*2*pi*(0:param.Nt-1)'*param.txEleSpacing/param.lambda*(-1+(m-1)*2/param.Nafft));
         ar = exp(1j*2*pi*(0:param.Nr-1)'*param.rxEleSpacing/param.lambda*(-1+(m-1)*2/param.Nafft));
         av = kron(at,ar);
-        % RS
-        ar_proj_RS = param.P_Ar_int_orth*ar;
-        rsStats(n,m) = abs(kron(at,ar_proj_RS)'*Y_rD_3D_n_l)^2/abs(param.Nt*ar'*ar_proj_RS);
         % Clairvoyant
         clairvoyantStats_n_m_l = av'*Y_rD_3D_n_l;
         for q = 1:param.numInt
@@ -198,12 +190,6 @@ for n = 1 : param.Nrfft
             clairvoyantStats_n_m_l = clairvoyantStats_n_m_l-b_tuta_n_l_q*param.Nt*ar'*ar_int_q;
         end
         clairvoyantStats(n,m) = abs(clairvoyantStats_n_m_l)^2/(param.Nt*param.Nr);
-        % GS
-        Lambda_einr_m = squeeze(Lambda_einr(:,:,mod(m-1,param.Nt)+1));
-        B_preinv_reg = inv(Lambda_einr_m) + param.Nt*param.Ar_int'*param.Ar_int;
-        P_Ar_int_orth_reg = eye(param.Nr) - param.Nt*param.Ar_int*(B_preinv_reg\param.Ar_int');
-        ar_proj_GS = P_Ar_int_orth_reg*ar;
-        gsStats(n,m) = abs(kron(at,ar_proj_GS)'*Y_rD_3D_n_l)^2/abs(param.Nt*ar'*ar_proj_GS);
         % LCMV
         lcmvStats(n,m) = abs((fast_R_est\av)'*Y_rD_3D_n_l)^2/abs(av'*(fast_R_est\av));
         % AGS
@@ -213,8 +199,6 @@ for n = 1 : param.Nrfft
 end
 param.PowAngleFFTdB = 10*log10(fftStats);
 param.PowClairvoyantdetectStatsdB = 10*log10(clairvoyantStats);
-param.PowRSStatsdB = 10*log10(rsStats);
-param.PowGSStatsdB = 10*log10(gsStats);
 [maxPowClairvoyantdetectStatsdB,maxClairIdx] = max(param.PowClairvoyantdetectStatsdB,[],"all");
 param.PowLCMVStatsdB = 10*log10(lcmvStats) + maxPowClairvoyantdetectStatsdB - 10*log10(lcmvStats(maxClairIdx));
 param.PowAGSStatsdB = 10*log10(agsStats) + maxPowClairvoyantdetectStatsdB - 10*log10(agsStats(maxClairIdx));
