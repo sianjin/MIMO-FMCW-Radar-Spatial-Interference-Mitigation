@@ -45,7 +45,7 @@
 
 ![alt text](https://github.com/sianjin/MIMO-FMCW-Radar-Spatial-Interference-Mitigation/blob/master/interferenceScenario.png)
 
-This project contains the simulation code for generating the figures in our project Paper: “Spatial-Domain Mutual Interference Mitigation for MIMO-FMCW Automotive Radar", submitted to IEEE TVT.
+This project contains part of the simulation code for generating the figures in our project Paper: “Spatial-Domain Mutual Interference Mitigation for MIMO-FMCW Automotive Radar", submitted to IEEE TVT.
 
 The simulation code contains two parts. One is the simulation based on synthetic data. The other is the simulation based on system-level simulation data.
 
