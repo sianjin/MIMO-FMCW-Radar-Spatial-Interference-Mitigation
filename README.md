@@ -47,8 +47,6 @@
 
 This project contains part of the simulation code for generating the figures in our project Paper: “Spatial-Domain Mutual Interference Mitigation for MIMO-FMCW Automotive Radar", submitted to IEEE TVT.
 
-The simulation code contains two parts. One is the simulation based on synthetic data. The other is the simulation based on system-level simulation data.
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -67,11 +65,18 @@ The simulation code contains two parts. One is the simulation based on synthetic
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-The "Synthetic Data" folder contains the code to generate synthetic data for receiver operating characteristic (ROC) curve simulation. 
+Two folders of simulation code can generate different levels of the simulation data and different types of simulation results:
 
-The "System-level Data" folder contains the code to generate system-level simulation data for angle/range-angle spectrum visualization and output interference power calculation.
+* The "Synthetic Data" folder contains the code to generate synthetic data for receiver operating characteristic (ROC) curve simulation. 
 
-The implementation detail of angle FFT, clairvoyant detector, linear constraint minimum variance (LCMV) detector, and adaptive GS (AGS) detector are included in the two folders.
+* The "System-level Data" folder contains the code to generate system-level simulation data for angle/range-angle spectrum visualization and output interference power calculation.
+
+The two folders include the implementation detail of following schemes:
+
+* Angle FFT
+* Clairvoyant detector
+* Linear constraint minimum variance (LCMV) detector
+* Adaptive GS (AGS) detector
 
 Please refer to the the ReadMe.m file in the "Synthetic Data" folder and "System-level Data" subfolders for more detail of the code information.
 
