@@ -71,7 +71,7 @@ The "Synthetic Data" folder contains the code to generate synthetic data for rec
 
 The "System-level Data" folder contains the code to generate system-level simulation data for angle/range-angle spectrum visualization and output interference power calculation.
 
-The implementation detail of angle FFT, clairvoyant detector, receiver subspace (RS) detector, linear constraint minimum variance (LCMV) detector, generalized subspace (GS) detector, and adaptive GS (AGS) detector are included in the two folders.
+The implementation detail of angle FFT, clairvoyant detector, linear constraint minimum variance (LCMV) detector, and adaptive GS (AGS) detector are included in the two folders.
 
 Please refer to the the ReadMe.m file in the "Synthetic Data" folder and "System-level Data" subfolders for more detail of the code information.
 
