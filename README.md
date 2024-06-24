@@ -74,9 +74,9 @@ Two folders of simulation code can generate different levels of the simulation d
 The two folders include the implementation detail of following schemes:
 
 * Angle FFT
-* Clairvoyant detector
-* Linear constraint minimum variance (LCMV) detector
-* Adaptive GS (AGS) detector
+* Clairvoyant
+* Linear constraint minimum variance (LCMV) with sample matrix inversion (SMI)
+* Adaptive GS (AGS)
 
 Please refer to the the ReadMe.m file in the "Synthetic Data" folder and "System-level Data" subfolders for more detail of the code information.
 
