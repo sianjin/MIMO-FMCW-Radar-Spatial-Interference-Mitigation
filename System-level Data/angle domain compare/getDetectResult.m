@@ -141,8 +141,6 @@ end
 % title('Detection Result on Range-Velocity Bins')
 %% Angle spectrum for phase coded MIMO radar
 param.Nafft = 2^nextpow2(param.Nr*param.Nt*4); % length of angle FFT
-rsStats = complex(zeros(param.Nafft,1));
-gsStats = complex(zeros(param.Nafft,1));
 clairvoyantStats = complex(zeros(param.Nafft,1));
 lcmvStats = complex(zeros(param.Nafft,1));
 agsStats = complex(zeros(param.Nafft,1));
@@ -154,9 +152,6 @@ rangeGI = 8; % range domain gurad interval on each side
 velocityGI = 4; % velocity domain gurad interval on each side
 rangeTrainCells = 4; % number of training cells on each side of range domain
 velocityTrainCells = 4; % number of training cells on each side of velocity domain
-% Get EINR estimation from nearby range-velocity bins for GS detector
-% einr_est = getEinrEst(Y_rD_3D,param);
-fast_einr_est = getEinrEstFast(Y_rD_3D,intStatRangeBin,intStatVelocityBin,param,rangeGI,velocityGI,rangeTrainCells,velocityTrainCells);
 % Get interference covariance matrix estimation from nearby range-velocity
 % bins for LCMV detector
 % R_est = getIntCovEst(Y_rD_3D,param);
@@ -186,10 +181,6 @@ for m = 1:param.Nafft
     at = exp(1j*2*pi*(0:param.Nt-1)'*param.txEleSpacing/param.lambda*(-1+(m-1)*2/param.Nafft));
     ar = exp(1j*2*pi*(0:param.Nr-1)'*param.rxEleSpacing/param.lambda*(-1+(m-1)*2/param.Nafft));
     av = kron(at,ar);
-    % RS
-    ar_proj_RS = param.P_Ar_int_orth*ar;
-    av_zeroPad_rs = [kron(at,ar_proj_RS);zeros(param.Nafft-param.Nr*param.Nt,1)];
-    rsStats(m) = abs(av_zeroPad_rs'*Y_rD_3D_n_l)^2/abs(param.Nt*ar'*ar_proj_RS);
     % Clairvoyant
     av_zeroPad_clairvoyant = [av;zeros(param.Nafft-param.Nr*param.Nt,1)];
     clairvoyantStats_n_m_l = av_zeroPad_clairvoyant'*Y_rD_3D_n_l;
@@ -199,13 +190,6 @@ for m = 1:param.Nafft
         clairvoyantStats_n_m_l = clairvoyantStats_n_m_l-b_tuta_n_l_q*param.Nt*ar'*ar_int_q;
     end
     clairvoyantStats(m) = abs(clairvoyantStats_n_m_l)^2/(param.Nt*param.Nr);
-    % GS
-    Lambda_einr_m = squeeze(Lambda_einr(:,:,mod(m-1,param.Nt)+1)); % Probabily not correct, check with fast implementation
-    B_preinv_reg = inv(Lambda_einr_m) + param.Nt*param.Ar_int'*param.Ar_int;
-    P_Ar_int_orth_reg = eye(param.Nr) - param.Nt*param.Ar_int*(B_preinv_reg\param.Ar_int');
-    ar_proj_GS = P_Ar_int_orth_reg*ar;
-    av_zeroPad_gs = [kron(at,ar_proj_GS);zeros(param.Nafft-param.Nr*param.Nt,1)];
-    gsStats(m) = abs(av_zeroPad_gs'*Y_rD_3D_n_l)^2/abs(param.Nt*ar'*ar_proj_GS);
     % LCMV
     R_est_n_l = fast_R_est;
     av_zeroPad_lcmv = [(R_est_n_l\av);zeros(param.Nafft-param.Nr*param.Nt,1)];
@@ -217,8 +201,6 @@ for m = 1:param.Nafft
 end
 param.PowAngleFFTdB = 10*log10(fftStats);
 param.PowClairvoyantdetectStatsdB = 10*log10(clairvoyantStats);
-param.PowRSStatsdB = 10*log10(rsStats);
-param.PowGSStatsdB = 10*log10(gsStats);
 [maxPowClairvoyantdetectStatsdB,maxClairIdx] = max(param.PowClairvoyantdetectStatsdB);
 param.PowLCMVStatsdB = 10*log10(lcmvStats) + maxPowClairvoyantdetectStatsdB - 10*log10(lcmvStats(maxClairIdx));
 param.PowAGSStatsdB = 10*log10(agsStats) + maxPowClairvoyantdetectStatsdB - 10*log10(agsStats(maxClairIdx));
