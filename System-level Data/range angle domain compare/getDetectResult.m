@@ -168,12 +168,6 @@ for n = 1 : param.Nrfft
     for q = 1:param.numInt
         At_int_n(:,q) = at_int_est_recordClairvoyant(n,:,q);
     end
-    % Obtain EINR
-    einr = fast_einr_est;
-    Lambda_einr = zeros(param.numInt,param.numInt,param.Nt);
-    for mt = 1:param.Nt
-        Lambda_einr(:,:,mt) = diag(einr(mt,:));
-    end
     % Angle FFT
     Y_raD_3D_n_l_fft = fftshift(fft(Y_rD_3D_n_l,param.Nafft));
     fftStats(n,:) = abs(Y_raD_3D_n_l_fft).^2/(param.Nt*param.Nr);
