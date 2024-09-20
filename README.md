@@ -45,7 +45,7 @@
 
 ![alt text](https://github.com/sianjin/MIMO-FMCW-Radar-Spatial-Interference-Mitigation/blob/master/interferenceScenario.png)
 
-This project contains part of the simulation code for generating the figures in our project Paper: “Spatial-Domain Mutual Interference Mitigation for MIMO-FMCW Automotive Radar", submitted to IEEE TVT.
+This project contains part of the simulation code for generating the figures in our project Paper: “Spatial-Domain Mutual Interference Mitigation for MIMO-FMCW Automotive Radar", accepted by IEEE TVT.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -76,9 +76,12 @@ The two folders include the implementation detail of following schemes:
 * Angle FFT
 * Clairvoyant
 * Linear constraint minimum variance (LCMV) with sample matrix inversion (SMI)
+* GS
 * Adaptive GS (AGS)
 
 Please refer to the the ReadMe.m file in the "Synthetic Data" folder and "System-level Data" subfolders for more detail of the code information.
+
+For RS detector simulation, please refer to https://github.com/merlresearch/mimo-fmcw-mim
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
