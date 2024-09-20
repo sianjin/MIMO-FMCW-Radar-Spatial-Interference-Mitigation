@@ -100,7 +100,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 Sian Jin - sianjin.mathworks@gmail.com
 
-Project Paper: “Spatial-Domain Mutual Interference Mitigation for MIMO-FMCW Automotive Radar", submitted to IEEE TVT.
+Project Paper: “Spatial-Domain Mutual Interference Mitigation for MIMO-FMCW Automotive Radar", accepted by IEEE TVT.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
