@@ -185,6 +185,8 @@ plot(tarAngle,param.PowAngleFFTdB);
 hold on
 % clairvoyant detector
 plot(tarAngle,param.PowClairvoyantdetectStatsdB);
+% GS detector
+plot(tarAngle,param.PowGSStatsdB);
 hold on
 % LCMV-SMI
 plot(tarAngle,param.PowLCMVStatsdB);
@@ -194,4 +196,4 @@ plot(tarAngle,param.PowAGSStatsdB);
 % Plot labels
 xlabel('Angle (degree)')
 ylabel('Power (dB)')
-legend('Angle FFT','Clairvoyant','LCMV-SMI','AGS')
+legend('Angle FFT','Clairvoyant','GS','LCMV-SMI','AGS')
