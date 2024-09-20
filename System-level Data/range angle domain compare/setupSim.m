@@ -200,6 +200,16 @@ xlabel('Range (m)')
 ylabel('Angle (degree)')
 zlabel('Power (dB)')
 title('Range-Angle Image, Clairvoyant')
+%% Plot RA map for GS
+figure
+[Range, Angle] = meshgrid(range, tarAngle);
+mesh(Range, Angle, param.PowGSStatsdB.')
+colorbar
+xlim([0, param.dmax])
+xlabel('Range (m)')
+ylabel('Angle (degree)')
+zlabel('Power (dB)')
+title('Range-Angle Image, GS')
 %% Plot RA map for LCMV-SMI
 figure
 [Range, Angle] = meshgrid(range, tarAngle);
