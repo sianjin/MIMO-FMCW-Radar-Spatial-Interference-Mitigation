@@ -3,6 +3,7 @@ param.Nafft = 2^nextpow2(param.Nr*param.Nt); % length of angle FFT
 param.Nrfft = 2^(nextpow2(ceil(param.FsADC*param.Tg))-1); % length of range FFT
 param.fftIntPowSet = zeros(1,param.numIterSim);
 param.fastClairvoyantIntPowSet = zeros(1,param.numIterSim);
+param.fastGsIntPowSet = zeros(1,param.numIterSim);
 param.fastLcmvIntPowSet = zeros(1,param.numIterSim);
 param.agsIntPowSet = zeros(1,param.numIterSim);
 for iterSim = 1: param.numIterSim
@@ -89,6 +90,7 @@ end
 %% Angle detection for phase coded MIMO radar
 fftStats = complex(zeros(param.Nrfft,param.Nafft));
 fastClairvoyantStats = complex(zeros(param.Nrfft,param.Nafft));
+fastGsStats = complex(zeros(param.Nrfft,param.Nafft));
 fastLcmvStats = complex(zeros(param.Nrfft,param.Nafft));
 agsStats = complex(zeros(param.Nrfft,param.Nafft));
 intStatRangeBin =param.binRangeTarget(param.targetIdx);
@@ -99,6 +101,9 @@ rangeGI = 8; % gurad interval on range domain
 velocityGI = 4; % gurad interval on velocity domain
 rangeTrainCells = 4; % number of training cells on each side of range domain
 velocityTrainCells = 4; % number of training cells on each side of velocity domain
+% Interference receive steering vector
+int_freq = sind(param.azIntVec)/param.lambda*param.rxEleSpacing;
+param.Ar_int = exp(1j*2*pi*(0:param.Nr-1)'*int_freq);
 % Detection result on each range bin
 for n = 1: param.Nrfft
     Y_rD_3D_n = Y_rD_3D(n,:,intStatVelocityBin)';
@@ -118,6 +123,42 @@ for n = 1: param.Nrfft
         clairvoyant_n = clairvoyant_n - clairvoyant_int_q;
     end
     fastClairvoyantStats(n,:) = abs(clairvoyant_n).^2/(param.Nt*param.Nr);
+    % Fast GS
+    y_rD_3D_n = reshape(Y_rD_3D_n,[param.Nr,param.Nt]); % decomponse y into y_1, y_2, ..., y_M
+    fast_einr_est = getEinrEstFast(Y_rD_3D,n,intStatVelocityBin,param,rangeGI,velocityGI,rangeTrainCells,velocityTrainCells);
+    Lambda_einr = zeros(param.numInt,param.numInt,param.Nt);
+    for mt = 1:param.Nt
+        Lambda_einr(:,:,mt) = diag(fast_einr_est(mt,:));
+    end
+    den_gs = zeros(param.Nr,param.Nt);
+    P_Ar_int_orth_reg = cell(param.Nt,1);
+    for mt = 1:param.Nt
+        B_GS_preinv_mt = inv(Lambda_einr(:,:,mt))/param.Nt + param.Ar_int'*param.Ar_int;
+        B_GS_mt = inv(B_GS_preinv_mt);
+        [U_GS_mt,D_GS_mt] = eig(B_GS_mt);
+        U_tuta_GS_mt = param.Ar_int*U_GS_mt;
+        P_Ar_int_orth_reg{mt} = eye(param.Nr) - U_tuta_GS_mt*D_GS_mt*U_tuta_GS_mt';
+        d_GS_mt = abs(diag(D_GS_mt));
+        den_gs_mt = param.Nr;
+        rotaVec_Nr_mt = exp(-1j*2*pi*(mt-1)*(0:param.Nr-1)'/(param.Nr*param.Nt));
+        for q = 1:param.numInt
+            den_gs_mt = den_gs_mt - ...
+                d_GS_mt(q)*abs(fftshift(fft([U_tuta_GS_mt(:,q)].*rotaVec_Nr_mt,param.Nr))).^2;
+        end
+        den_gs(:,mt) = den_gs_mt*param.Nt;
+    end
+    den_gs = reshape(den_gs',[],1);
+    num_gs = zeros(param.Nr,param.Nt);
+    for mt = 1:param.Nt
+        P_Ar_int_orth_reg_mt = P_Ar_int_orth_reg{mt};
+        Y_rD_3D_n_proj_mt = P_Ar_int_orth_reg_mt*y_rD_3D_n;
+        Y_rD_3D_n_proj_mt_vec = reshape(Y_rD_3D_n_proj_mt,[],1);
+        num_gs_full_mt = fftshift(fft(Y_rD_3D_n_proj_mt_vec,param.Nafft));
+        num_gs(:,mt) = num_gs_full_mt(mt:param.Nt:end);
+    end
+    num_gs = abs(num_gs).^2;
+    num_gs = reshape(num_gs',[],1);
+    fastGsStats(n,:) = num_gs./den_gs;
     % Fast LCMV
     fast_R_est = getIntCovEstFast(Y_rD_3D,n,intStatVelocityBin,param,rangeGI,velocityGI,rangeTrainCells,velocityTrainCells);
     R_est_inv = inv(fast_R_est);
@@ -144,6 +185,7 @@ end
 % param.PowAngleFFTdB = 10*log10(fftStats);
 % param.PowClairvoyantdetectStatsdB = 10*log10(fastClairvoyantStats);
 % tarClairvoyantdetectStatsdB = param.PowClairvoyantdetectStatsdB(intStatRangeBin,intStatAngleBin);
+% param.PowGSStatsdB = 10*log10(fastGsStats);
 % param.PowLCMVStatsdB = 10*log10(fastLcmvStats) + tarClairvoyantdetectStatsdB - 10*log10(fastLcmvStats(intStatRangeBin,intStatAngleBin));
 % param.PowAGSStatsdB = 10*log10(agsStats) + tarClairvoyantdetectStatsdB - 10*log10(agsStats(intStatRangeBin,intStatAngleBin));
 % %% Plot RA map for angle FFT
@@ -169,6 +211,16 @@ end
 % ylabel('Angle (degree)')
 % zlabel('Power (dB)')
 % title('Range-Angle Image, Clairvoyant')
+% %% Plot RA map for GS
+% figure
+% [Range, Angle] = meshgrid(range, tarAngle);
+% mesh(Range, Angle, param.PowGSStatsdB.')
+% colorbar
+% xlim([0, param.dmax])
+% xlabel('Range (m)')
+% ylabel('Angle (degree)')
+% zlabel('Power (dB)')
+% title('Range-Angle Image, GS')
 % %% Plot RA map for LCMV-SMI
 % figure
 % [Range, Angle] = meshgrid(range, tarAngle);
@@ -218,6 +270,18 @@ clairvoyantIntPw = clairvoyantNonTargetPw(:,max(param.binAngleInt-2,1):min(param
 clairvoyantIntPw = clairvoyantIntPw(clairvoyantIntPw~=0);
 clairvoyantIntAvgPw = mean(clairvoyantIntPw,'all');
 param.fastClairvoyantIntPowSet(iterSim) = pow2db(clairvoyantIntAvgPw);
+% GS
+gsNonTargetAmplitude = fastGsStats;
+for tarIdx = 1:length(param.dTarget)
+    binRangeTargetExtendTarIdx = max(param.binRangeTarget(tarIdx)-binRangeExtend,1):min(param.binRangeTarget(tarIdx)+binRangeExtend,param.Nrfft); 
+    binAngleTargetExtendTarIdx = max(param.binAngleTarget(tarIdx)-binAnlgeExtend,1)-1:min(param.binAngleTarget(tarIdx)+binAnlgeExtend,param.Nafft); 
+    gsNonTargetAmplitude(binRangeTargetExtendTarIdx,binAngleTargetExtendTarIdx) = 0;
+end
+gsNonTargetPw = gsNonTargetAmplitude.^2;
+gsIntPw = gsNonTargetPw(:,max(param.binAngleInt-2,1):min(param.binAngleInt+2,param.Nafft));
+gsIntPw = gsIntPw(gsIntPw~=0);
+gsIntAvgPw = mean(gsIntPw,'all');
+param.fastGsIntPowSet(iterSim) = pow2db(gsIntAvgPw);
 % LCMV-SMI
 lcmvNonTargetAmplitude = fastLcmvStats/fastLcmvStats(intStatRangeBin,intStatAngleBin)*fastClairvoyantStats(intStatRangeBin,intStatAngleBin);
 for tarIdx = 1:length(param.dTarget)
