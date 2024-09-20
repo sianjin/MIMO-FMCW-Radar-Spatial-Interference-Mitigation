@@ -111,6 +111,13 @@ num_clairvoyant_0 = abs(a_tar_v'*(y_0 - a_mix_v1*b_tuta_int_1 - a_mix_v2*b_tuta_
 den_clairvoyant = M*N;
 T_y_0_clairvoyant = 2/sigma_square*num_clairvoyant_0/den_clairvoyant;
 T_y_0_sort_clairvoyant = sort(T_y_0_clairvoyant);
+% GS
+R = h_square1/sigma_square*(a_mix_v1*a_mix_v1') ...
+    + h_square2/sigma_square*(a_mix_v2*a_mix_v2') + eye(M*N); % Covariance matrix of noise + essential interference 
+num_GS_0 = abs((R\a_tar_v)'*y_0).^2;
+den_GS = abs(a_tar_v'*(R\a_tar_v));
+T_y_0_GS = 2/sigma_square*num_GS_0/den_GS;
+T_y_0_sort_GS = sort(T_y_0_GS);
 % LCMV 
 R_LCMV = 1/sigma_square*kron(R_int_t1,a_int_r1*a_int_r1') ...
     + 1/sigma_square*kron(R_int_t2,a_int_r2*a_int_r2') + eye(M*N); % Covariance matrix of noise + interference 
@@ -141,6 +148,9 @@ y_1 = kron(b*a_tar_v,ones(1,Nsim)) + a_int_v1 + a_int_v2 + z;
 % clairvoyant
 num_clairvoyant_1 = abs(a_tar_v'*(y_1 - a_mix_v1*b_tuta_int_1 - a_mix_v2*b_tuta_int_2)).^2;
 T_y_1_clairvoyant = 2/sigma_square*num_clairvoyant_1/den_clairvoyant;
+% GS
+num_GS_1 = abs((R\a_tar_v)'*y_1).^2;
+T_y_1_GS = 2/sigma_square*num_GS_1/den_GS;
 % LCMV 
 num_LCMV_1 = abs((R_LCMV\a_tar_v)'*y_1).^2;
 T_y_1_LCMV = 2/sigma_square*num_LCMV_1/den_LCMV;
@@ -156,7 +166,7 @@ for iter = 1:Nsim
     num_IAGS_1 (iter) = abs((Rr(:,:,iter)\a_tar_v)'*y_1(:,iter)).^2;
 end
 T_y_1_IAGS = 2/sigma_square*num_IAGS_1./den_IAGS;
-%% Plot Monte-Carlo ROC curve
+%% Monte-Carlo ROC curve
 % false alarm rate
 count_fa = [1e2:1e2:1e3,2e3:1e3:1e4,2e4:1e4:1e5,2e5:1e5:1e6];
 % count_fa = [1e2:1e2:1e3,2e3:1e3:1e4,2e4:1e4:1e5];
@@ -164,6 +174,9 @@ Pfa = count_fa/Nsim;
 % clairvoyant
 Pd_MC_clairvoyant = zeros(1,length(count_fa));
 thresh_clairvoyant = zeros(1,length(count_fa));
+% GS
+Pd_MC_GS = zeros(1,length(count_fa));
+thresh_GS = zeros(1,length(count_fa));
 % LCMV
 Pd_MC_LCMV = zeros(1,length(count_fa));
 thresh_LCMV = zeros(1,length(count_fa));
@@ -178,6 +191,10 @@ for iter = 1:length(count_fa)
     thresh_iter_clairvoyant = T_y_0_sort_clairvoyant(end-count_fa(iter)+1);
     Pd_MC_clairvoyant(iter) = sum(T_y_1_clairvoyant>thresh_iter_clairvoyant)/Nsim;
     thresh_clairvoyant(iter) = thresh_iter_clairvoyant;
+    % GS
+    thresh_iter_GS = T_y_0_sort_GS(end-count_fa(iter)+1);
+    Pd_MC_GS(iter) = sum(T_y_1_GS>thresh_iter_GS)/Nsim;
+    thresh_GS(iter) = thresh_iter_GS;
     % LCMV
     thresh_iter_LCMV = T_y_0_sort_LCMV(end-count_fa(iter)+1);
     Pd_MC_LCMV(iter) = sum(T_y_1_LCMV>thresh_iter_LCMV)/Nsim;
@@ -191,23 +208,44 @@ for iter = 1:length(count_fa)
     Pd_MC_IAGS(iter) = sum(T_y_1_IAGS>thresh_iter_IAGS)/Nsim;
     thresh_IAGS(iter) = thresh_iter_IAGS;
 end
-%% Plot theoretical ROC curve
+figure
+plot(Pfa, Pd_MC_clairvoyant,'-.')
+hold on
+plot(Pfa, Pd_MC_GS,'--*')
+hold on
+plot(Pfa, Pd_MC_LCMV_SMI,'--v')
+hold on
+plot(Pfa, Pd_MC_IAGS,':o')
+xlabel('P_{FA}')
+ylabel('P_{D}')
+grid on
+set(gca, 'XScale', 'log')
+legend('Clairvoyant (Monte-Carlo)','GS (Monte-Carlo)','LCMV-SMI (Monte-Carlo)','AGS (Monte-Carlo)')
+%% Theoretical ROC curve
 % theoretical detection threshold
 gamma = -2*log(Pfa); 
 % clairvoyant
 lambda_clairvoyant = 2*(abs(b))^2/sigma_square*den_clairvoyant;
 Pd_theory_clairvoyant = zeros(1,length(count_fa));
-% LCMV
+% GS
+lambda_GS = 2*(abs(b))^2/sigma_square*den_GS;
+Pd_theory_GS = zeros(1,length(count_fa));
+% LCMV (ideal convariance matrix)
 lambda_LCMV = 2*(abs(b))^2/sigma_square*den_LCMV;
 Pd_theory_LCMV = zeros(1,length(count_fa));
 for iter = 1:length(count_fa)
     % clairvoyant
-    Pd_theory_clairvoyant(iter) = marcumq(sqrt(lambda_clairvoyant),sqrt(gamma(iter)));  
-    % LCMV
+    Pd_theory_clairvoyant(iter) = marcumq(sqrt(lambda_clairvoyant),sqrt(gamma(iter))); 
+    % GS
+    Pd_theory_GS(iter) = marcumq(sqrt(lambda_GS),sqrt(gamma(iter))); 
+    % LCMV (ideal convariance matrix)
     Pd_theory_LCMV(iter) = marcumq(sqrt(lambda_LCMV),sqrt(gamma(iter))); 
 end
+%% Plot ROC curve
 figure
 plot(Pfa, Pd_theory_clairvoyant,'-.',LineWidth = 2)
+hold on
+plot(Pfa, Pd_theory_GS,'-*',LineWidth = 1)
 hold on
 plot(Pfa, Pd_MC_LCMV_SMI,'--v',LineWidth = 1)
 hold on
@@ -216,4 +254,4 @@ grid on
 set(gca, 'XScale', 'log')
 xlabel('P_{FA}')
 ylabel('P_{D}')
-legend('Clairvoyant','LCMV-SMI','AGS')
+legend('Clairvoyant (theory)','GS (theory)','LCMV-SMI (Monte-Carlo)','AGS (Monte-Carlo)')
